@@ -487,14 +487,14 @@ function Editor(action, mouseClick)
             'automatically tune contour parameters (standard search)', ...
             'automatically tune contour parameters (extensive search)'}
         
-            if ((exist('matlabpool', 'file') == 2) && (matlabpool('size') > 0))
+            if ((exist('matlabpool', 'file') == 2) && (~isempty(gcp('nocreate'))))
               choice = questdlg('Matlab pool is open, this may cause issues. Proceed anyway?', 'Warning', 'Proceed', 'Close pool and proceed', 'Cancel', 'Cancel');
             else
                 choice = 'Proceed';
             end
             if any(strcmp(choice, {'Proceed', 'Close pool and proceed'}))
                 if strcmp(choice, 'Close pool and proceed')
-                    matlabpool close
+                    delete(gcp('nocreate'));
                 end
                 switch action
                   case 'automatically tune contour parameters (quick search)'
@@ -513,14 +513,14 @@ function Editor(action, mouseClick)
       case {'automatically tune ranking parameters (quick search)', ...
             'automatically tune ranking parameters (standard search)', ...
             'automatically tune ranking parameters (extensive search)'}
-            if ((exist('matlabpool', 'file') == 2) && (matlabpool('size') > 0))
+            if ((exist('matlabpool', 'file') == 2) && (~isempty(gcp('nocreate'))))
               choice = questdlg('Matlab pool is open, this may cause issues. Proceed anyway?', 'Warning', 'Proceed', 'Close pool and proceed', 'Cancel', 'Cancel');
             else
                 choice = 'Proceed';
             end
             if any(strcmp(choice, {'Proceed', 'Close pool and proceed'}))
               if strcmp(choice, 'Close pool and proceed')
-                  matlabpool close
+                  delete(gcp('nocreate'));
               end
               switch action
                 case 'automatically tune ranking parameters (quick search)'
@@ -635,14 +635,14 @@ function Editor(action, mouseClick)
                   frames = -1;
           end
 
-          if ((exist('matlabpool', 'file') == 2) && (matlabpool('size') == 0))
+          if ((exist('matlabpool', 'file') == 2) && (~isempty(gcp('nocreate'))))
               choice = questdlg(['(Re)doing ' st ' may take a long time, and Matlab pool is closed.'], 'Warning', 'Proceed', 'Open pool and proceed', 'Cancel', 'Cancel');
           else
               choice = questdlg([ '(Re)doing ' st ' may take a long time. Continue?' ], 'Warning', 'Proceed', 'Cancel', 'Cancel');
           end
           if any(strcmp(choice, {'Proceed', 'Open pool and proceed'}))
               if strcmp(choice, 'Open pool and proceed')
-                  matlabpool
+                  parpool;
               end
               applyLog = false;
               if (frames == -1)
@@ -1416,15 +1416,16 @@ function [snakes, segments, allSeeds, segMap] = ...
     
     % this is needed later for PatchTracking
     segmentsMap = zeros(1, nOldSegments);
-    listOfNewSegments = [];
+    listOfNewSegments = nan(1,length(snakes));
     for i = 1:length(snakes)
       if isfield(snakes{i}, 'previousSegmentNumber') && (snakes{i}.previousSegmentNumber > 0)
           segmentsMap(snakes{i}.previousSegmentNumber) = i;
           snakes{i} = rmfield(snakes{i}, 'previousSegmentNumber');
       else
-          listOfNewSegments = [ listOfNewSegments i ];
+          listOfNewSegments(i) = i;
       end
     end
+    listOfNewSegments(isnan(listOfNewSegments))=[];
     segMap.map = segmentsMap;
     segMap.newSegments = listOfNewSegments;
     
@@ -1593,7 +1594,7 @@ function ModifyTrackingGroundTruth(action)
                    end
                end
            end
-           csui.trackingBuf.groundTruth = csui.trackingBuf.groundTruth(find(~removeColumn), :);
+           csui.trackingBuf.groundTruth = csui.trackingBuf.groundTruth(~removeColumn, :);
            if any (removeColumn')
                if (~IsSubField (csui, {'trackingBuf', 'needsFullTracking'}))
                    csui.trackingBuf.needsFullTracking = [];
@@ -1626,7 +1627,7 @@ function CheckTrackingGroundTruthConsistency()
            end
        end
    end
-   csui.trackingBuf.groundTruth = csui.trackingBuf.groundTruth(find(~removeColumn), :);
+   csui.trackingBuf.groundTruth = csui.trackingBuf.groundTruth(~removeColumn, :);
 end
 
 

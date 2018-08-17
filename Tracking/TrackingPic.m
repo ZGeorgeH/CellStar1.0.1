@@ -84,7 +84,7 @@ function pic = TrackingPic(traces, frame, parents, parameters, segments, plotNum
     chsv(:,3) = 0.5;
     colors = hsv2rgb(chsv);
     
-    rand('seed', 1);
+    rng(1,'twister');
     
     colors = colors(randperm(nCells), :);
     colors = [colors; 0 0 1; 1 0 0; 1 0 1];
@@ -156,9 +156,9 @@ function pic = TrackingPic(traces, frame, parents, parameters, segments, plotNum
     if plotNumbers
       fontSize = 10;      
 %       hold on;
-      ts = {};
-      x = [];
-      y = [];
+      ts = cell(1,nTracked);
+      x = nan(1,nTracked);
+      y = x;
       for j=1:nTracked
           x(j) = coords(j,1);
           y(j) = coords(j,2);
