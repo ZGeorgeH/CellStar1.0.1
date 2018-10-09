@@ -104,4 +104,4 @@ disp('Tracking done!');
 %% Modify results manually
 % If you change your mind, you can still edit the results 
 % in the user interface as follows:
-InitUI(parameters);
+%InitUI(parameters);
